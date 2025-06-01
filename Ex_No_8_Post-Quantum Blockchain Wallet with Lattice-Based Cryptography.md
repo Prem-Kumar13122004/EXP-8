@@ -108,9 +108,7 @@ contract PostQuantumWallet {
 # Expected Output:
 Users register using a post-quantum secure public key.
 
-
 Transactions require a quantum-resistant signature for authentication.
-
 
 If a traditional quantum-vulnerable hash is used, the transaction fails.
 
@@ -120,13 +118,7 @@ If a traditional quantum-vulnerable hash is used, the transaction fails.
 # RESULT : 
 High-Level Overview:
 First quantum-safe Ethereum-compatible wallet prototype.
-
-
 Uses lattice-based key hashes instead of ECDSA.
-
-
 Demonstrates how Ethereum will transition to post-quantum security.
-
-
 Inspired by NIST’s post-quantum cryptography competition.
 
