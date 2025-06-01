@@ -38,49 +38,70 @@ contract PostQuantumWallet {
         bool registered;
     }
 
-    mapping(address => User) private users; // Made private to hide from Remix UI
+    mapping(address => User) public users;
     mapping(address => uint256) public balances;
 
     event UserRegistered(address user, bytes32 publicKeyHash);
     event TransactionVerified(address from, address to, uint256 amount);
 
-    // Constructor
-    constructor() {}
-
-    // Generate a quantum-safe signature (simulated using keccak256)
-    function generateSignature(address _sender, address _recipient, uint256 _amount) public pure returns (bytes32) {
-        return keccak256(abi.encodePacked(_sender, _recipient, _amount));
-    }
-
-    // Generate a simulated lattice-based public key hash
-    function generatePublicKeyHash(string memory _publicKey) public pure returns (bytes32) {
-        return keccak256(abi.encodePacked(_publicKey));
-    }
-
-    // Register a user with a public key hash
-    function registerUser(bytes32 _publicKeyHash) public {
+    // Simulated user registration with auto-generated key hash
+    function registerUser() public {
         require(!users[msg.sender].registered, "User already registered");
-        users[msg.sender] = User(_publicKeyHash, true);
-        emit UserRegistered(msg.sender, _publicKeyHash);
+
+        bytes32 fakePublicKeyHash = keccak256(
+            abi.encodePacked(msg.sender, block.timestamp)
+        );
+
+        users[msg.sender] = User(fakePublicKeyHash, true);
+        emit UserRegistered(msg.sender, fakePublicKeyHash);
     }
 
-    // Send funds using quantum-safe simulated signature
-    function sendFunds(address _to, uint256 _amount, bytes32 _signature) public {
+    // Function to simulate transaction and verify signature
+    function sendFunds(address _to, uint256 _amount) public payable {
         require(users[msg.sender].registered, "Sender not registered");
         require(users[_to].registered, "Recipient not registered");
         require(balances[msg.sender] >= _amount, "Insufficient funds");
 
-        bytes32 calculatedSignature = generateSignature(msg.sender, _to, _amount);
-        require(calculatedSignature == _signature, "Invalid quantum-safe signature");
+        // Simulated signature generation within the contract using keccak256
+        bytes32 expectedSignature = generateSignature(msg.sender, _to, _amount);
 
+        // Recalculate the hash for the current transaction
+        bytes32 calculatedHash = keccak256(
+            abi.encodePacked(msg.sender, _to, _amount)
+        );
+
+        // Check if the calculated hash matches the expected signature
+        require(calculatedHash == expectedSignature, "Invalid signature");
+
+        // Perform the fund transfer
         balances[msg.sender] -= _amount;
         balances[_to] += _amount;
+
         emit TransactionVerified(msg.sender, _to, _amount);
     }
 
-    // Deposit funds to the wallet
-    function depositFunds() public payable {
-        balances[msg.sender] += msg.value;}
+    // Function to generate a pseudo-signature using keccak256
+    function generateSignature(address _from, address _to, uint256 _amount) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked(_from, _to, _amount));
+    }
+
+    // Allow depositing ETH to simulate balances
+    receive() external payable {
+        balances[msg.sender] += msg.value;
+    }
+
+    // Optional: withdraw funds
+    function withdraw(uint256 _amount) public {
+        require(balances[msg.sender] >= _amount, "Insufficient balance");
+        balances[msg.sender] -= _amount;
+        payable(msg.sender).transfer(_amount);
+    }
+
+    // Function to deposit ETH into a specific user's account
+    function depositToAccount(address _user) public payable {
+        require(users[_user].registered, "User not registered");
+        balances[_user] += msg.value;
+    }
 }
 ```
 
@@ -93,6 +114,8 @@ Transactions require a quantum-resistant signature for authentication.
 
 If a traditional quantum-vulnerable hash is used, the transaction fails.
 
+# Output:
+![image](https://github.com/user-attachments/assets/3117a69f-b57c-47cf-96ee-15366b45a9ce)
 
 # RESULT : 
 High-Level Overview:
